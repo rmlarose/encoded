@@ -10,5 +10,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from encoded import diagonalize
 from encoded import repetition_code
 from encoded import LST
