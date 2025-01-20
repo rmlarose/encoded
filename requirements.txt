@@ -1,0 +1,5 @@
+cirq-core
+stimcirq
+qsimcirq
+qiskit
+qiskit-ibm-runtime
