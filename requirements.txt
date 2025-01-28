@@ -1,5 +1,9 @@
 cirq-core
+cirq_google
 stimcirq
 qsimcirq
 qiskit
 qiskit-ibm-runtime
+qiskit_aer
+mitiq
+numba
