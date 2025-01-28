@@ -3,11 +3,9 @@ import cirq
 import qiskit.circuit
 import qsimcirq
 import cirq_google
-import jax.numpy as jnp
 from tqdm import tqdm
 import qiskit
 import qiskit_ibm_runtime
-from numba import njit
 from numba import types
 from numba.typed import Dict
 
