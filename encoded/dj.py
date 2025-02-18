@@ -31,7 +31,6 @@ def dj(qreg: Sequence[cirq.Qid]) -> cirq.Circuit:
         if oracleValue == 1:
             circuit_dj.append(cirq.X(qreg[n]))
     else:  # Otherwise, it returns the inner product of the input with a (non-zero bitstring)
-        print(range(n))
         for i in range(n):
             if oracleValue & (1 << i):
                 circuit_dj.append(cirq.CNOT.on(qreg[n - i - 1], qreg[n]))
