@@ -1,8 +1,5 @@
 import cirq
-import cirq.linalg
-import qsimcirq
-import numpy as np
-from typing import Sequence, Dict
+from typing import Sequence
 from encoded.steane import encoding_steane, logical_H, logical_X, logical_CNOT
 
 
@@ -59,20 +56,20 @@ def dj_steane(qreg: Sequence[cirq.Qid], oracleType: int, oracleValue: int) -> ci
     for i in range(k + 1):
         circuit_dj.append(encoding_steane(qreg[i * 7 : 7 * (i + 1)]))
 
-    circuit_dj.append(cirq.H.on_each(qreg[: 7 * k]))
-    circuit_dj.append(cirq.X.on_each(qreg[7 * k : 7 * (k + 1)]))
-    circuit_dj.append(cirq.H.on_each(qreg[7 * k : 7 * (k + 1)]))
+    circuit_dj.append(logical_H(qreg[: 7 * k]))
+    circuit_dj.append(logical_X(qreg[7 * k : 7 * (k + 1)]))
+    circuit_dj.append(logical_H(qreg[7 * k : 7 * (k + 1)]))
 
     # Oracle
     if oracleType == 0:  # If the oracleType is "0", the oracle returns oracleValue for all input.
         if oracleValue == 1:
-            circuit_dj.append(cirq.X.on_each(qreg[7 * k : 7 * (k + 1)]))
+            circuit_dj.append(logical_X(qreg[7 * k : 7 * (k + 1)]))
     else:  # Otherwise, it returns the inner product of the input with a (non-zero bitstring)
         for i in range(7 * k):
             if oracleValue & (1 << i):
                 circuit_dj.append(logical_CNOT(qreg[7 * i : 7 * (i + 1)], qreg[7 * k : 7 * (k + 1)]))
 
     # finalization
-    circuit_dj.append(cirq.H.on_each(qreg[: 7 * k]))
+    circuit_dj.append(logical_H(qreg[: 7 * k]))
 
     return circuit_dj
