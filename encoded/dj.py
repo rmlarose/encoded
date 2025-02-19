@@ -4,7 +4,7 @@ import numpy as np
 from typing import Sequence, Dict
 
 
-def dj(qreg: Sequence[cirq.Qid]) -> cirq.Circuit:
+def dj(qreg: Sequence[cirq.Qid], oracleType: int, oracleValue: int) -> cirq.Circuit:
     """
     Args:
         qregs: set of N+1 qubits where the N first qubits represent the reqister for querying the oracle and the N+1-th qubit is the register for storing the answer of the oracle
@@ -15,11 +15,6 @@ def dj(qreg: Sequence[cirq.Qid]) -> cirq.Circuit:
     # implementing quantum electro
     circuit_dj = cirq.Circuit()
     n = len(qreg) - 1
-
-    # define oracle with type = 0 (unbalanced) or 1 (balanced) and define value of oracle (for unbalanced case)
-    oracleType, oracleValue = np.random.randint(2), np.random.randint(2)
-    if oracleType == 1:
-        oracleValue = np.random.randint(1, 2**n)
 
     # initialization
     circuit_dj.append(cirq.H.on_each(qreg[:n]))
