@@ -33,4 +33,4 @@ def dj(qreg: Sequence[cirq.Qid], oracleType: int, oracleValue: int) -> cirq.Circ
     # finalization
     circuit_dj.append(cirq.H.on_each(qreg[:n]))
 
-    return circuit_dj, oracleType, oracleValue
+    return circuit_dj
