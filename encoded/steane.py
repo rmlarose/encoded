@@ -36,8 +36,8 @@ def logical_X(qreg: Sequence[cirq.Qid]) -> cirq.Circuit:
     return circuit
 
 
-def logical_CNOT(qreg: Sequence[cirq.Qid]) -> cirq.Circuit:
+def logical_CNOT(qreg1: Sequence[cirq.Qid], qreg2: Sequence[cirq.Qid]) -> cirq.Circuit:
     circuit = cirq.Circuit()
     for i in range(7):
-        circuit.append(cirq.CNOT.on(qreg[i], qreg[i + 7]))
+        circuit.append(cirq.CNOT.on(qreg1[i], qreg2[i]))
     return circuit
