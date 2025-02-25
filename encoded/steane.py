@@ -1,26 +1,65 @@
 import cirq
 from typing import Sequence
+import stim
+import stimcirq
+
+
+import numpy as np
+from typing import List
+
+
+def parity_check_matrix_to_stabilizers(matrix: np.ndarray) -> List[stim.PauliString]:
+    num_rows, num_cols = matrix.shape
+    assert num_cols % 2 == 0
+    num_qubits = num_cols // 2
+
+    matrix = matrix.astype(np.bool8)  # indicate the data isn't bit packed
+    return [
+        stim.PauliString.from_numpy(
+            xs=matrix[row, :num_qubits],
+            zs=matrix[row, num_qubits:],
+        )
+        for row in range(num_rows)
+    ]
+
+
+def stabilizers_to_encoder(stabilizers) -> stim.Circuit:
+    tableau = stim.Tableau.from_stabilizers(
+        stabilizers,
+        allow_underconstrained=True,
+    )
+
+    # Note: Look at https://github.com/quantumlib/Stim/blob/main/doc/python_api_reference_vDev.md
+    # For the different method of encoding
+
+    return tableau.to_circuit(method="graph_state")
 
 
 def encoding_steane(qreg: Sequence[cirq.Qid]) -> cirq.Circuit:
-    circuit = cirq.Circuit()
-    circuit = cirq.Circuit()
+    # circuit = cirq.Circuit()
 
-    circuit.append(cirq.H.on(qreg[0]))
-    circuit.append(cirq.H.on(qreg[4]))
-    circuit.append(cirq.H.on(qreg[6]))
+    # circuit.append(cirq.H.on(qreg[0]))
+    # circuit.append(cirq.H.on(qreg[4]))
+    # circuit.append(cirq.H.on(qreg[6]))
 
-    circuit.append(cirq.CNOT.on(qreg[0], qreg[1]))
-    circuit.append(cirq.CNOT.on(qreg[4], qreg[5]))
+    # circuit.append(cirq.CNOT.on(qreg[0], qreg[1]))
+    # circuit.append(cirq.CNOT.on(qreg[4], qreg[5]))
 
-    circuit.append(cirq.CNOT.on(qreg[6], qreg[3]))
-    circuit.append(cirq.CNOT.on(qreg[6], qreg[5]))
-    circuit.append(cirq.CNOT.on(qreg[4], qreg[2]))
+    # circuit.append(cirq.CNOT.on(qreg[6], qreg[3]))
+    # circuit.append(cirq.CNOT.on(qreg[6], qreg[5]))
+    # circuit.append(cirq.CNOT.on(qreg[4], qreg[2]))
 
-    circuit.append(cirq.CNOT.on(qreg[0], qreg[3]))
-    circuit.append(cirq.CNOT.on(qreg[4], qreg[1]))
-    circuit.append(cirq.CNOT.on(qreg[3], qreg[2]))
-
+    # circuit.append(cirq.CNOT.on(qreg[0], qreg[3]))
+    # circuit.append(cirq.CNOT.on(qreg[4], qreg[1]))
+    # circuit.append(cirq.CNOT.on(qreg[3], qreg[2]))
+    a = stim.PauliString("+XXXX___")
+    b = stim.PauliString("+_XX_XX_")
+    c = stim.PauliString("+__XX_XX")
+    d = stim.PauliString("+ZZZZ___")
+    e = stim.PauliString("+_ZZ_ZZ_")
+    f = stim.PauliString("+__ZZ_ZZ")
+    stab_list = [a, b, c, d, e, f]
+    circuit = stimcirq.stim_circuit_to_cirq_circuit(stabilizers_to_encoder(stab_list))
     return circuit
 
 
