@@ -13,7 +13,7 @@ def parity_check_matrix_to_stabilizers(matrix: np.ndarray) -> List[stim.PauliStr
     assert num_cols % 2 == 0
     num_qubits = num_cols // 2
 
-    matrix = matrix.astype(np.bool8)  # indicate the data isn't bit packed
+    matrix = matrix.astype(np.bool8)
     return [
         stim.PauliString.from_numpy(
             xs=matrix[row, :num_qubits],
@@ -28,30 +28,10 @@ def stabilizers_to_encoder(stabilizers) -> stim.Circuit:
         stabilizers,
         allow_underconstrained=True,
     )
-
-    # Note: Look at https://github.com/quantumlib/Stim/blob/main/doc/python_api_reference_vDev.md
-    # For the different method of encoding
-
     return tableau.to_circuit(method="graph_state")
 
 
 def encoding_steane(qreg: Sequence[cirq.Qid]) -> cirq.Circuit:
-    # circuit = cirq.Circuit()
-
-    # circuit.append(cirq.H.on(qreg[0]))
-    # circuit.append(cirq.H.on(qreg[4]))
-    # circuit.append(cirq.H.on(qreg[6]))
-
-    # circuit.append(cirq.CNOT.on(qreg[0], qreg[1]))
-    # circuit.append(cirq.CNOT.on(qreg[4], qreg[5]))
-
-    # circuit.append(cirq.CNOT.on(qreg[6], qreg[3]))
-    # circuit.append(cirq.CNOT.on(qreg[6], qreg[5]))
-    # circuit.append(cirq.CNOT.on(qreg[4], qreg[2]))
-
-    # circuit.append(cirq.CNOT.on(qreg[0], qreg[3]))
-    # circuit.append(cirq.CNOT.on(qreg[4], qreg[1]))
-    # circuit.append(cirq.CNOT.on(qreg[3], qreg[2]))
     a = stim.PauliString("+XXXX___")
     b = stim.PauliString("+_XX_XX_")
     c = stim.PauliString("+__XX_XX")
@@ -63,19 +43,19 @@ def encoding_steane(qreg: Sequence[cirq.Qid]) -> cirq.Circuit:
     return circuit
 
 
-def logical_H(qreg: Sequence[cirq.Qid]) -> cirq.Circuit:
+def steane_H(qreg: Sequence[cirq.Qid]) -> cirq.Circuit:
     circuit = cirq.Circuit()
     circuit.append(cirq.H.on_each(qreg))
     return circuit
 
 
-def logical_X(qreg: Sequence[cirq.Qid]) -> cirq.Circuit:
+def steane_X(qreg: Sequence[cirq.Qid]) -> cirq.Circuit:
     circuit = cirq.Circuit()
     circuit.append(cirq.X.on_each(qreg))
     return circuit
 
 
-def logical_CNOT(qreg1: Sequence[cirq.Qid], qreg2: Sequence[cirq.Qid]) -> cirq.Circuit:
+def steane_CNOT(qreg1: Sequence[cirq.Qid], qreg2: Sequence[cirq.Qid]) -> cirq.Circuit:
     circuit = cirq.Circuit()
     for i in range(7):
         circuit.append(cirq.CNOT.on(qreg1[i], qreg2[i]))
