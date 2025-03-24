@@ -120,7 +120,7 @@ def get_measurement_circuit(stabilizer_matrix):
     return measurement_circuit, np.concatenate((z_matrix, x_matrix))
 
 
-def get_measurement_circuit_triangular_color_code(stabilizer_matrix):
+def get_measurement_circuit_tcc(stabilizer_matrix, distance):
     numq = len(stabilizer_matrix) // 2 # number of qubits
     nump = len(stabilizer_matrix[0]) # number of paulis
     z_matrix = stabilizer_matrix.copy()[:numq]
@@ -129,31 +129,33 @@ def get_measurement_circuit_triangular_color_code(stabilizer_matrix):
     measurement_circuit = cirq.Circuit()
     qreg = cirq.LineQubit.range(numq)
 
-    # Find a combination of rows to make X matrix have rank nump
-    row_combination = "XZ" * (numq // 2) + "X"
-    print("Row combination:", row_combination)
-    assert len(row_combination) == numq
+    # Compute a combination of rows to make X matrix have rank (mod 2) nump
+    row_combination_pattern = ""
+    pi = 0
+    while len(row_combination_pattern) < numq:
+        row_combination_pattern = row_combination_pattern + "XXXZXZ" + "XZXZXZ"*pi
+        pi += 1
+    row_combination = row_combination_pattern[:numq-distance+2] + "Z"*(distance-2)
     candidate_matrix = np.array([
         z_matrix[i] if c=="Z" else x_matrix[i] for i, c in enumerate(row_combination)
     ])
 
     # Apply Hadamards to swap X and Z rows to transform X matrix to have rank nump
-    assert np.linalg.matrix_rank(candidate_matrix) == nump
-    print("Matrix is full rank")
-    for i, c in enumerate(row_combination):
-        if c == "Z":
-            z_matrix[i] = x_matrix[i]
-            measurement_circuit.append(cirq.H.on(qreg[i]))
-    x_matrix = candidate_matrix
-    print("X matrix")
-    print(x_matrix)
-    assert np.linalg.matrix_rank(x_matrix) == nump
-
+    if np.linalg.matrix_rank(candidate_matrix) == nump:
+        for i, c in enumerate(row_combination):
+            if c == "Z":
+                z_matrix[i] = x_matrix[i]
+                measurement_circuit.append(cirq.H.on(qreg[i]))
+        x_matrix = candidate_matrix
+    
     for j in range(nump):
         if x_matrix[j,j] == 0:
             i = j + 1
-            while x_matrix[i,j] == 0:
-                i += 1
+            while True:
+                if np.isclose(x_matrix[i,j], 0.0):
+                    i += 1
+                else:
+                    break
 
             x_row = x_matrix[i].copy()
             x_matrix[i] = x_matrix[j]
