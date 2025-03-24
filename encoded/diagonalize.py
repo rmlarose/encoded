@@ -41,6 +41,7 @@ def get_paulis_from_stabilizer_matrix(stabilizer_matrix):
         paulis.append(PauliString(p)._pauli)
     return paulis
 
+
 def get_measurement_circuit(stabilizer_matrix):
     numq = len(stabilizer_matrix) // 2 # number of qubits
     nump = len(stabilizer_matrix[0]) # number of paulis
@@ -58,7 +59,6 @@ def get_measurement_circuit(stabilizer_matrix):
 
         # Apply Hadamards to swap X and Z rows to transform X matrix to have rank nump
         if np.linalg.matrix_rank(candidate_matrix) == nump:
-            print("Row combination:", row_combination)
             for i, c in enumerate(row_combination):
                 if c == "Z":
                     z_matrix[i] = x_matrix[i]
@@ -66,8 +66,6 @@ def get_measurement_circuit(stabilizer_matrix):
             x_matrix = candidate_matrix
             break
     
-    print("X matrix")
-    print(x_matrix)
     for j in range(nump):
         if x_matrix[j,j] == 0:
             i = j + 1
