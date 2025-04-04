@@ -31,15 +31,21 @@ def stabilizers_to_encoder(stabilizers) -> stim.Circuit:
     return tableau.to_circuit(method="graph_state")
 
 
-def encoding_steane(qreg: Sequence[cirq.Qid]) -> cirq.Circuit:
-    a = stim.PauliString("+XXXX___")
-    b = stim.PauliString("+_XX_XX_")
-    c = stim.PauliString("+__XX_XX")
-    d = stim.PauliString("+ZZZZ___")
-    e = stim.PauliString("+_ZZ_ZZ_")
-    f = stim.PauliString("+__ZZ_ZZ")
-    stab_list = [a, b, c, d, e, f]
-    circuit = stimcirq.stim_circuit_to_cirq_circuit(stabilizers_to_encoder(stab_list))
+def encoding_steane(circuit, qreg):
+    RX_stim = stimcirq.MeasureAndOrResetGate(
+        measure=False, reset=True, basis="X", invert_measure=False, key="", measure_flip_probability=0
+    )
+    circuit.append(RX_stim.on_each(qreg))
+    circuit.append(cirq.CZ(qreg[0], qreg[3]))
+    circuit.append(cirq.CZ(qreg[0], qreg[4]))
+    circuit.append(cirq.CZ(qreg[0], qreg[5]))
+    circuit.append(cirq.CZ(qreg[1], qreg[3]))
+    circuit.append(cirq.CZ(qreg[1], qreg[4]))
+    circuit.append(cirq.CZ(qreg[1], qreg[6]))
+    circuit.append(cirq.CZ(qreg[2], qreg[3]))
+    circuit.append(cirq.CZ(qreg[2], qreg[5]))
+    circuit.append(cirq.CZ(qreg[2], qreg[6]))
+    circuit.append(cirq.H.on_each(qreg[3:7]))
     return circuit
 
 

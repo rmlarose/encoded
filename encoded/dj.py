@@ -55,7 +55,7 @@ def dj_steane(qreg: Sequence[cirq.Qid], oracleType: int, oracleValue: int) -> ci
 
     # initialization
     for i in range(k + 1):
-        circuit_dj.append(encoding_steane(qreg[i * 7 : 7 * (i + 1)]))
+        encoding_steane(circuit_dj, qreg[i * 7 : 7 * (i + 1)])
 
     circuit_dj.append(steane_H(qreg[: 7 * k]))
     circuit_dj.append(steane_X(qreg[7 * k : 7 * (k + 1)]))
@@ -96,12 +96,13 @@ def dj_repetition(qreg: Sequence[cirq.Qid], n_encoding: int, oracleType: int, or
     #     circuit_dj.append(encoding_repetition("0", qreg[i * n_encoding : n_encoding * (i + 1)]))
     for i in range(k):
         repetition_H_half(circuit_dj, qreg, n_encoding, i)
-    # repetition_X(circuit_dj, qreg, n_encoding, k)
-    circuit_dj.append(cirq.X.on(qreg[k * n_encoding]))
+    #
     repetition_H_half(circuit_dj, qreg, n_encoding, k)
+    # circuit_dj.append(cirq.Z.on(qreg[k * n_encoding]))
 
     if oracleType == 0:  # If the oracleType is "0", the oracle returns oracleValue for all input.
         if oracleValue == 1:
+            print()
             repetition_X(circuit_dj, qreg, n_encoding, k)
     else:  # Otherwise, it returns the inner product of the input with a (non-zero bitstring)
         for i in range(n_encoding * k):
@@ -111,7 +112,7 @@ def dj_repetition(qreg: Sequence[cirq.Qid], n_encoding: int, oracleType: int, or
     # finalization
     for i in range(k):
         repetition_H(circuit_dj, qreg, n_encoding, i)
-
+    repetition_X(circuit_dj, qreg, n_encoding, 0)
     return circuit_dj
 
 
