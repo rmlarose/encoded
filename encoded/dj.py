@@ -2,6 +2,7 @@ import cirq
 from typing import Sequence, List
 from encoded.steane import encoding_steane, steane_H, steane_X, steane_CNOT
 from encoded.repetition_code import encoding_repetition, repetition_H, repetition_X, repetition_CNOT
+from encoded.tcc import tcc_encoding, tcc_H, tcc_X, tcc_CNOT
 
 
 def dj(qreg: Sequence[cirq.Qid], oracleType: int, oracleValue: int) -> cirq.Circuit:
@@ -72,6 +73,54 @@ def dj_steane(qreg: Sequence[cirq.Qid], oracleType: int, oracleValue: int) -> ci
 
     # finalization
     circuit_dj.append(steane_H(qreg[: 7 * k]))
+
+    return circuit_dj
+
+
+def dj_tcc(qreg: Sequence[cirq.Qid], distance, n_encoding: int, oracleType: int, oracleValue: int) -> cirq.Circuit:
+    """
+    Implementation of the Deutsch Jozsa algorithm using the Steane code for encoding a logical qubit.
+    Args:
+        - qregs: set of n_encoding*(k+1) qubits for k logical qubits representing the register for querying the oracle and the last logical qubit is the register for storing the answer of the oracle
+        - distance: distance of the TCC code
+        - n_encoding: the number of qubits in the TCC code
+        - oracleType: type of oracle to be used. If oracleType is "0", the oracle is unbalanced otherwise it is balanced
+        - oracleValue: value to be returned by the oracle if oracleType is "1"
+
+    Returns:
+        - cirq.Circuit: quantum circuit for the Deutsch Jozsa algorithm encoded in the steane code
+    """
+
+    # implementing quantum electro
+    circuit_dj = cirq.Circuit()
+    k = len(qreg) // n_encoding - 1
+
+    tmp_circuit = tcc_encoding(distance)
+    # initialization
+    for i in range(k + 1):
+        circuit_dj = cirq.Circuit.concat_ragged(
+            circuit_dj,
+            tmp_circuit.transform_qubits(
+                dict(zip(qreg[:n_encoding], qreg[(i + 1) * n_encoding : (i + 2) * n_encoding]))
+            ),
+        )
+    circuit_dj.append(tcc_H(qreg[: n_encoding * k]))
+    circuit_dj.append(tcc_X(qreg[n_encoding * k : n_encoding * (k + 1)]))
+    circuit_dj.append(tcc_H(qreg[n_encoding * k : n_encoding * (k + 1)]))
+
+    # Oracle
+    if oracleType == 0:  # If the oracleType is "0", the oracle returns oracleValue for all input.
+        if oracleValue == 1:
+            circuit_dj.append(tcc_X(qreg[n_encoding * k : n_encoding * (k + 1)]))
+    else:  # Otherwise, it returns the inner product of the input with a (non-zero bitstring)
+        for i in range(n_encoding * k):
+            if oracleValue & (1 << i):
+                circuit_dj.append(
+                    tcc_CNOT(qreg[n_encoding * i : n_encoding * (i + 1)], qreg[n_encoding * k : n_encoding * (k + 1)])
+                )
+
+    # finalization
+    circuit_dj.append(tcc_H(qreg[: n_encoding * k]))
 
     return circuit_dj
 
