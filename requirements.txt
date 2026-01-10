@@ -5,6 +5,5 @@ qsimcirq
 qiskit
 qiskit-ibm-runtime
 qiskit_aer
-mitiq
 numba
 joblib

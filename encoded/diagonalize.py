@@ -2,8 +2,6 @@ import numpy as np
 from itertools import product
 import cirq
 
-from mitiq import PauliString
-
 def get_stabilizer_matrix_from_paulis(stabilizers, qubits):
     numq = len(qubits)
     nump = len(stabilizers)
@@ -23,6 +21,26 @@ def get_stabilizer_matrix_from_paulis(stabilizers, qubits):
 
     return stabilizer_matrix
 
+
+def string_to_cirq_paulistring(spec: str, coeff: complex = 1.0) -> cirq.PauliString:
+    _string_to_gate_map = {"I": cirq.I, "X": cirq.X, "Y": cirq.Y, "Z": cirq.Z}
+    if not set(spec).issubset(set(_string_to_gate_map.keys())):
+            raise ValueError(
+                f"One or more invalid characters in spec {spec}. Valid "
+                f"characters are 'I', 'X', 'Y', and 'Z', and the spec should "
+                f"not contain any spaces."
+            )
+    support = range(len(spec))
+
+    return cirq.PauliString(
+        coeff,
+        (
+            _string_to_gate_map[s].on(cirq.LineQubit(i))
+            for (i, s) in zip(support, spec)
+        ),
+    )
+
+
 def get_paulis_from_stabilizer_matrix(stabilizer_matrix):
     paulis = []
     nump = len(stabilizer_matrix[0])
@@ -38,7 +56,7 @@ def get_paulis_from_stabilizer_matrix(stabilizer_matrix):
                 p += "X"
             else:
                 p += "I"
-        paulis.append(PauliString(p)._pauli)
+        paulis.append(string_to_cirq_paulistring(p))
     return paulis
 
 
