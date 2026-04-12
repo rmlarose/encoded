@@ -84,7 +84,32 @@ def stabilizers_to_encoder(stabilizers) -> stim.Circuit:
     return tableau.to_circuit(method="graph_state")
 
 
-def tcc_encoding(distance):
+def encode_steane() -> cirq.Circuit:
+    qreg = cirq.LineQubit.range(8)
+    circuit = cirq.Circuit()
+
+    circuit.append(cirq.H.on(qreg[0]))
+    circuit.append(cirq.H.on(qreg[4]))
+    circuit.append(cirq.H.on(qreg[6]))
+
+    circuit.append(cirq.CNOT.on(qreg[0], qreg[1]))
+    circuit.append(cirq.CNOT.on(qreg[4], qreg[5]))
+
+    circuit.append(cirq.CNOT.on(qreg[6], qreg[3]))
+    circuit.append(cirq.CNOT.on(qreg[6], qreg[5]))
+    circuit.append(cirq.CNOT.on(qreg[4], qreg[2]))
+    
+    circuit.append(cirq.CNOT.on(qreg[0], qreg[3]))
+    circuit.append(cirq.CNOT.on(qreg[4], qreg[1]))
+    circuit.append(cirq.CNOT.on(qreg[3], qreg[2]))
+
+    return circuit
+
+
+def tcc_encoding(distance) -> cirq.Circuit:
+    # if distance == 3:
+    #     return encode_steane()
+    
     generator_strs = get_stabilizer_generators(distance)[::-1]
     return stimcirq.stim_circuit_to_cirq_circuit(stabilizers_to_encoder([stim.PauliString(s) for s in generator_strs]))
 
