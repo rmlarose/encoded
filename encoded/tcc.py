@@ -107,11 +107,18 @@ def encode_steane() -> cirq.Circuit:
 
 
 def tcc_encoding(distance) -> cirq.Circuit:
-    # if distance == 3:
-    #     return encode_steane()
-    
+    n = (3 * distance ** 2 + 1) // 4
     generator_strs = get_stabilizer_generators(distance)[::-1]
-    return stimcirq.stim_circuit_to_cirq_circuit(stabilizers_to_encoder([stim.PauliString(s) for s in generator_strs]))
+    stabilizers = [stim.PauliString(s) for s in generator_strs]
+    # Pin the logical state by adding logical Z = Z on all n qubits. This
+    # commutes with every X stabilizer (each tile has even weight 4 or 6)
+    # and is not a product of Z stabilizers (n is odd for any odd distance),
+    # so it's a valid logical-Z representative. Without it, the tableau is
+    # underconstrained and stim chooses an arbitrary completion, which for
+    # d >= 5 lands in the logical-X eigenspace, preparing |+_L> instead of
+    # |0_L> and making |0_L> and |1_L> indistinguishable in the Z basis.
+    stabilizers.append(stim.PauliString("Z" * n))
+    return stimcirq.stim_circuit_to_cirq_circuit(stabilizers_to_encoder(stabilizers))
 
 
 def tcc_H(qreg: Sequence[cirq.Qid]) -> cirq.Circuit:
