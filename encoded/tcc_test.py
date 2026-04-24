@@ -31,8 +31,11 @@ print(encode_one)
 sampler_zero = stimcirq.cirq_circuit_to_stim_circuit(encode_zero + cirq.measure(qubits)).compile_sampler()
 sampler_one = stimcirq.cirq_circuit_to_stim_circuit(encode_one + cirq.measure(qubits)).compile_sampler()
 
-zero_states = sorted(set([int(b[0]) for b in sampler_zero.sample(nshots, bit_packed=True)]))
-one_states = sorted(set([int(b[0]) for b in sampler_one.sample(nshots, bit_packed=True)]))
+# bit_packed=True returns ceil(n/8) bytes per sample; int(b[0]) would only
+# read the first byte and silently truncate to qubits 0..7 (fine for d=3,
+# wrong for d>=5). int.from_bytes packs every byte so we cover all n qubits.
+zero_states = sorted({int.from_bytes(bytes(b), 'little') for b in sampler_zero.sample(nshots, bit_packed=True)})
+one_states = sorted({int.from_bytes(bytes(b), 'little') for b in sampler_one.sample(nshots, bit_packed=True)})
 
 # Display output.
 print("Sampled logical 0 states:")
@@ -41,6 +44,9 @@ print("\n" * 2)
 print("Sampled logical 1 states:")
 print(one_states)
 # These shouldn't be identical.
+assert set(zero_states).isdisjoint(set(one_states)), (
+    f"Logical 0 and logical 1 codeword sets overlap for distance {distance}."
+)
 """
 Logical 0 encoding:
                        ┌──┐           ┌──┐   ┌──┐   ┌──┐   ┌──┐               ┌──┐           ┌──┐       ┌──┐                   ┌──┐       ┌──┐           ┌──┐
